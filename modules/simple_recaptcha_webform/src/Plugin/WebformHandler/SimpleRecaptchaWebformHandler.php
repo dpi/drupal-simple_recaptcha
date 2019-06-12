@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\simple_recaptcha\Plugin\WebformHandler;
+namespace Drupal\simple_recaptcha_webform\Plugin\WebformHandler;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
