@@ -1,0 +1,6 @@
+name: Simple Google reCaptcha
+type: module
+description: Provides simple integration with Google reCaptcha, keeping forms and webforms secure.
+core: 8.x
+package: Spam control
+configure: simple_recaptcha.settings

@@ -1,0 +1,3 @@
+form_ids: 'user_pass,user_register_form'
+site_key: ''
+secret_key: ''

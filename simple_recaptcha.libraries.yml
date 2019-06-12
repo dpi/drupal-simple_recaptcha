@@ -1,0 +1,11 @@
+recaptcha:
+  js:
+    'https://www.google.com/recaptcha/api.js': { type: external, minified: true, attributes: { defer: true, async: true } }
+simple_recaptcha:
+  version: 1.x
+  js:
+    js/simple_recaptcha.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - simple_recaptcha/recaptcha
