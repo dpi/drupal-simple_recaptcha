@@ -5,4 +5,5 @@ core: 8.x
 package: Spam control
 configure: simple_recaptcha.settings
 dependencies:
+  - simple_recaptcha:simple_recaptcha
   - webform:webform
