@@ -125,7 +125,7 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
     }
     // Grab build info to get current form id.
     $info = $form_state->getBuildInfo();
-    $config = $this->configFactory->get('simple_recaptcha');
+    $config = $this->configFactory->get('simple_recaptcha.config');
     $form['#attributes']['data-recaptcha-id'] = $info['form_id'];
     $div_id = $info['form_id'] . '-captcha';
     // Wrapper for reCAPTCHA widget.
