@@ -18,7 +18,7 @@
               const submitHtmlId = $(this).attr("id");
 
               // Find captcha wrapper.
-              const $captcha = $(this).prev(".captcha-wrapper");
+              const $captcha = $(this).prev(".recaptcha-wrapper");
 
               // If it is a first submission of that form, render captcha widget.
               if (
@@ -29,6 +29,7 @@
                   sitekey: drupalSettings.simple_recaptcha.sitekey
                 });
                 $captcha.fadeIn();
+                $captcha.addClass('recaptcha-visible');
                 e.preventDefault();
               } else {
                 // Check reCaptcha response.
@@ -52,6 +53,7 @@
                     "border": "1px solid #e74c3c",
                     "border-radius": "4px"
                   });
+                  $captcha.addClass('recaptcha-error');
                   e.preventDefault();
                 }
               }

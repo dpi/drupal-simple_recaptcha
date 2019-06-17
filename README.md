@@ -36,3 +36,10 @@ When user tries to submit the form, following actions be executed, depending on 
 Internal route /api/simple_recaptcha/verify is implemented because of two reasons:
 * to avoid exposition of secret key in page markup
 * to avoid problems with CORS policy 
+
+## Theming
+This modules wraps reCaptcha widget with custom `<div>` element, which receives helper CSS classes depending on state: 
+* .recaptcha, .recaptcha-wrapper - default state, those classes are provided in initial state even when reCaptcha widget wasn't rendered yet
+* .recaptcha-visible - reCaptcha widget was successfully rendered and is ready to use 
+* .recaptcha-error - reCaptcha widget was successfuly rendered, but reCaptcha validation response isn't validated yet ( for example: user tries to submit form before dealing with reCaptcha challenge) 
+

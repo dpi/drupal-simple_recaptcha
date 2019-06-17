@@ -129,7 +129,7 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
     $form['#attributes']['data-recaptcha-id'] = $info['form_id'];
     $div_id = $info['form_id'] . '-captcha';
     // Wrapper for reCAPTCHA widget.
-    $form['actions']['captcha']['#markup'] = '<div id="' . $div_id . '" class="captcha captcha-wrapper"></div>';
+    $form['actions']['captcha']['#markup'] = '<div id="' . $div_id . '" class="recaptcha recaptcha-wrapper"></div>';
     $form['actions']['captcha']['#weight'] = -1;
     // Helper JS.
     $form['#attached']['drupalSettings']['simple_recaptcha']['sitekey'] = $config->get('site_key');
