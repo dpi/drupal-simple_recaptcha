@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_form_alter().
@@ -34,4 +36,30 @@ function simple_recaptcha_form_alter(&$form, FormStateInterface $form_state, $fo
   }
   $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha';
   return $form;
+}
+
+/**
+ * @file
+ * This module provides Google reCAPTCHA v2 protection for Drupal forms.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function simple_recaptcha_help($route_name, RouteMatchInterface $arg) {
+  switch ($route_name) {
+    case 'help.page.simple_recaptcha':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This Drupal 8 module provides reCAPTCHA v2 integration, it is crafted to work with different caching strategies, with multiple forms displayed on the same page.') . '</p>';
+
+      // Add a link to the Drupal.org project.
+      $output .= '<p>';
+      $output .= t('Visit the <a href=":project_link">Simple Google reCaptcha project pages</a> on Drupal.org for more information.', [
+        ':project_link' => Url::fromUri('https://www.drupal.org/project/simple_recaptcha')->toString(),
+      ]);
+      $output .= '</p>';
+
+      return $output;
+  }
 }
