@@ -39,11 +39,6 @@ function simple_recaptcha_form_alter(&$form, FormStateInterface $form_state, $fo
 }
 
 /**
- * @file
- * This module provides Google reCAPTCHA v2 protection for Drupal forms.
- */
-
-/**
  * Implements hook_help().
  */
 function simple_recaptcha_help($route_name, RouteMatchInterface $arg) {
