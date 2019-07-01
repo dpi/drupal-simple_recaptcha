@@ -1,3 +1,6 @@
+<!---
+// phpcs:ignoreFile -- this is not a core file
+-->
 # Simple Google reCatcpah
 This Drupal 8 module provides reCAPTCHA v2 integration, it is crafted to work with different caching strategies, with multiple forms displayed on the same page.
 
@@ -41,5 +44,4 @@ Internal route /api/simple_recaptcha/verify is implemented because of two reason
 This modules wraps reCaptcha widget with custom `<div>` element, which receives helper CSS classes depending on state: 
 * .recaptcha, .recaptcha-wrapper - default state, those classes are provided in initial state even when reCaptcha widget wasn't rendered yet
 * .recaptcha-visible - reCaptcha widget was successfully rendered and is ready to use 
-* .recaptcha-error - reCaptcha widget was successfuly rendered, but reCaptcha validation response isn't validated yet ( for example: user tries to submit form before dealing with reCaptcha challenge) 
-
+* .recaptcha-error - reCaptcha widget was successfuly rendered, but reCaptcha validation response isn't validated yet ( for example: user tries to submit form before dealing with reCaptcha challenge)

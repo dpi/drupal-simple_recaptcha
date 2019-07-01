@@ -13,28 +13,21 @@ use Drupal\Core\Url;
  * Implements hook_form_alter().
  */
 function simple_recaptcha_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Check user permissions.
   if (\Drupal::currentUser()->hasPermission('bypass simple_recaptcha')) {
     return;
   }
 
+  // Find matching form id in module configuration.
   $config = \Drupal::configFactory()->get('simple_recaptcha.config');
-
   $form_ids = explode(',', $config->get('form_ids'));
   if (!in_array($form_id, $form_ids)) {
     return;
   }
 
-  $form['#attributes']['data-recaptcha-id'] = $form_id;
-  $div_id = $form['#form_id'] . '-captcha';
-  // Wrapper for reCAPTCHA widget.
-  $form['actions']['captcha']['#markup'] = '<div id="' . $div_id . '" class="recaptcha recaptcha-wrapper"></div>';
-  $form['actions']['captcha']['#weight'] = -1;
-  // Helper JS.
-  $form['#attached']['drupalSettings']['simple_recaptcha']['sitekey'] = $config->get('site_key');
-  foreach ($form_ids as $id) {
-    $form['#attached']['drupalSettings']['simple_recaptcha']['form_ids'][$id] = $id;
-  }
-  $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha';
+  // Attach reCaptcha markup and libraries to the form form.
+  $info = $form_state->getBuildInfo();
+  \Drupal::service('simple_recaptcha.form_manager')->addReCaptchaChechbox($form, $info['form_id']);
   return $form;
 }
 

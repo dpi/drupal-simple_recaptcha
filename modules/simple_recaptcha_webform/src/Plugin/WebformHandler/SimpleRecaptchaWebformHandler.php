@@ -12,13 +12,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\CurrentRouteMatch;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\simple_recaptcha\SimpleReCaptchaFormManager;
 
 /**
  * Webform submission handler plugin.
  *
  * @WebformHandler(
  *   id = "simple_recaptcha",
- *   label = @Translation("reCaptcha v2"),
+ *   label = @Translation("reCaptcha"),
  *   category = @Translation("simple_recaptcha"),
  *   description = @Translation("Adds reCaptcha protection to the webform."),
  *   cardinality = \Drupal\webform\Plugin\WebformHandlerInterface::CARDINALITY_SINGLE,
@@ -71,6 +72,13 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
   protected $currentUser;
 
   /**
+   * Form manager service from simple_recaptcha module.
+   *
+   * @var \Drupal\simple_recaptcha\SimpleReCaptchaFormManager
+   */
+  protected $reCaptchaFormManager;
+
+  /**
    * Constructs an ActivityWebformHandler object.
    *
    * @param array $configuration
@@ -91,11 +99,14 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
    *   Current route.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   Current active user.
+   * @param \Drupal\simple_recaptcha\SimpleReCaptchaFormManager $recaptcha_form_manager
+   *   Helper service used to attach reCaptcha to forms.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelFactoryInterface $logger_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, WebformSubmissionConditionsValidatorInterface $conditions_validator, CurrentRouteMatch $current_route, AccountProxyInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelFactoryInterface $logger_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, WebformSubmissionConditionsValidatorInterface $conditions_validator, CurrentRouteMatch $current_route, AccountProxyInterface $current_user, SimpleReCaptchaFormManager $recaptcha_form_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger_factory, $config_factory, $entity_type_manager, $conditions_validator);
     $this->currentRoute = $current_route;
     $this->currentUser = $current_user;
+    $this->reCaptchaFormManager = $recaptcha_form_manager;
   }
 
   /**
@@ -111,7 +122,8 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
       $container->get('entity_type.manager'),
       $container->get('webform_submission.conditions_validator'),
       $container->get('current_route_match'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('simple_recaptcha.form_manager')
     );
   }
 
@@ -123,18 +135,9 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
     if ($this->currentUser->hasPermission('bypass simple_recaptcha')) {
       return;
     }
-    // Grab build info to get current form id.
     $info = $form_state->getBuildInfo();
-    $config = $this->configFactory->get('simple_recaptcha.config');
-    $form['#attributes']['data-recaptcha-id'] = $info['form_id'];
-    $div_id = $info['form_id'] . '-captcha';
-    // Wrapper for reCAPTCHA widget.
-    $form['actions']['captcha']['#markup'] = '<div id="' . $div_id . '" class="recaptcha recaptcha-wrapper"></div>';
-    $form['actions']['captcha']['#weight'] = -1;
-    // Helper JS.
-    $form['#attached']['drupalSettings']['simple_recaptcha']['sitekey'] = $config->get('site_key');
-    $form['#attached']['drupalSettings']['simple_recaptcha']['form_ids'][$info['form_id']] = $info['form_id'];
-    $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha';
+    $this->reCaptchaFormManager->addReCaptchaChechbox($form, $info['form_id']);
+
     return $form;
   }
 
