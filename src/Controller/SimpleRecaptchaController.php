@@ -19,19 +19,25 @@ class SimpleRecaptchaController extends ControllerBase {
    */
   public function verifyResponse(Request $request) {
     $client = \Drupal::httpClient();
-    $recaptcha_site_key = $request->query->get('recaptcha_site_key');
+
     // Deny empty requests.
+    $recaptcha_site_key = $request->query->get('recaptcha_site_key');
     if (!$recaptcha_site_key) {
       throw new AccessDeniedHttpException();
     }
 
+    $config = \Drupal::config('simple_recaptcha.config');
+    $type = $request->query->get('recaptcha_type');
+    $config_site_key = $type == 'v2' ? $config->get('site_key') : $config->get('site_key_v3');
+    $config_secret_key = $type == 'v2' ? $config->get('secret_key') : $config->get('secret_key_v3');
+
     // Deny requests with invalid site key provided.
-    if ($recaptcha_site_key != \Drupal::config('simple_recaptcha.config')->get('site_key')) {
+    if ($recaptcha_site_key != $config_site_key) {
       throw new AccessDeniedHttpException();
     }
     $recaptcha_response = $query = $request->query->get('recaptcha_response');
     $params = [
-      'secret' => \Drupal::config('simple_recaptcha.config')->get('secret_key'),
+      'secret' => $config_secret_key,
       'response' => $recaptcha_response,
     ];
     // Sending POST Request with $json_data to example.com.
@@ -55,7 +61,7 @@ class SimpleRecaptchaController extends ControllerBase {
     ];
     $response = new CacheableJsonResponse($api_response);
     $response->addCacheableDependency(CacheableMetadata::createFromRenderArray($data));
-    return new $response();
+    return $response;
   }
 
 }

@@ -51,3 +51,27 @@ function simple_recaptcha_help($route_name, RouteMatchInterface $arg) {
       return $output;
   }
 }
+
+/**
+ * Implements hook_library_info_build().
+ */
+function simple_recaptcha_library_info_build() {
+  $libraries = [];
+  // reCAPTCHA v3 requires site key added to URL when loading it,
+  // as site key is stored in config we need to build this library dynamically.
+  $sitekey = \Drupal::config('simple_recaptcha.config')->get('site_key_v3');
+  $url = 'https://www.google.com/recaptcha/api.js?render=' . $sitekey;
+  $libraries['recaptcha'] = [
+    'js' => [
+      $url => [
+        'type' => 'external',
+        'minified' => TRUE,
+        'attributes' => [
+          'defer' => TRUE,
+          'async' => TRUE,
+        ],
+      ],
+    ],
+  ];
+  return $libraries;
+}

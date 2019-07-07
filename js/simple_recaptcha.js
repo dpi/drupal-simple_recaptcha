@@ -1,10 +1,12 @@
 (function($) {
+  "use strict";
   Drupal.behaviors.simple_recaptcha = {
-    attach(context, drupalSettings) {
+    attach: function(context, drupalSettings) {
       // Grab form IDs from settings and loop through them.
-       for(const formId in drupalSettings.simple_recaptcha.form_ids) {
-        const $form = $(`form[data-recaptcha-id="${formId}"]`);
-        $form.once("ds-captcha").each(() => {
+       for(let formId in drupalSettings.simple_recaptcha.form_ids) {
+         const $form = $('form[data-recaptcha-id="'+formId+'"]');
+
+         $form.once("simple-recaptcha").each(function() {
           // Disable submit buttons on form.
           const $submit = $form.find('[type="submit"]');
           $submit.attr("data-disabled", "true");
@@ -38,9 +40,9 @@
                 // Verify reCaptcha response.
                 if (typeof response !== "undefined" && response.length) {
                   $.post("/api/simple_recaptcha/verify?recaptcha_response=" + response + "&recaptcha_site_key=" + drupalSettings.simple_recaptcha.sitekey ).done(
-                    data => {
+                    function (data) {
                       if (data.success) {
-                        const $currentSubmit = $(`#${submitHtmlId}`);
+                        const $currentSubmit = $('#' + submitHtmlId);
                         // Unblock submit on success.
                         $currentSubmit.removeAttr("data-disabled");
                         $currentSubmit.trigger("click");

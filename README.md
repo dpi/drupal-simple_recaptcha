@@ -1,8 +1,12 @@
 <!---
 // phpcs:ignoreFile -- this is not a core file
 -->
-# Simple Google reCatcpah
-This Drupal 8 module provides reCAPTCHA v2 integration, it is crafted to work with different caching strategies, with multiple forms displayed on the same page.
+# Simple Google reCAPTCHA
+This Drupal 8 module provides reCAPTCHA integration, it is crafted to work with different caching strategies, with multiple forms displayed on the same page.
+
+# Supported reCAPTCHA versions 
+* reCAPTCHA v2 (checkbox) - can be added to any form by form_id and to any webform 
+* reCAPTCHA v3 (invisible) - currently can be added to webforms only
 
 # Installation 
 Run composer to install the module:

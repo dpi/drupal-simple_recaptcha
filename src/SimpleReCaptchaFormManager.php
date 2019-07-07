@@ -64,4 +64,38 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha';
   }
 
+  /**
+   * Add reCaptcha v3 container and libraries to the form.
+   *
+   * @param array $form
+   *   Renderable array of form which will be secured by reCaptcha checkbox.
+   * @param string $form_id
+   *   Form ID of form which will be secured.
+   * @param array $configuration
+   *   Configuration for invisible recaptcha.
+   */
+  public function addReCaptchaInvisible(array &$form, $form_id, array $configuration) {
+
+    $config = $this->configFactory->get('simple_recaptcha.config');
+    // Add HTML data attributes and Wrapper for reCAPTCHA widget.
+    $form['#attributes']['data-recaptcha-id'] = $form_id;
+    $form['actions']['captcha'] = [
+      '#type' => 'container',
+      '#weight' => -1,
+      '#attributes' => [
+        'id' => $form_id . '-captcha',
+        'class' => ['recaptcha-v3', 'recaptcha-v3-wrapper'],
+      ],
+    ];
+
+    $form['#attached']['drupalSettings']['simple_recaptcha_v3']['sitekey'] = $config->get('site_key_v3');
+    $form['#attached']['drupalSettings']['simple_recaptcha_v3']['forms'][$form_id] = [
+      'form_id' => $form_id,
+      'score' => $configuration['v3_score'],
+      'error_message' => $configuration['v3_error_message'],
+      'action' => $configuration['recaptcha_action']
+    ];
+    $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha_v3';
+  }
+
 }
