@@ -2,6 +2,7 @@
   "use strict";
   Drupal.behaviors.simple_recaptcha = {
     attach: function(context, drupalSettings) {
+      const verified = [];
       // Grab form IDs from settings and loop through them.
        for(let formId in drupalSettings.simple_recaptcha.form_ids) {
          const $form = $('form[data-recaptcha-id="'+formId+'"]');
@@ -11,12 +12,17 @@
           const $submit = $form.find('[type="submit"]');
           $submit.attr("data-disabled", "true");
 
+          const formHtmlId = $form.attr("id");
           const captchas = [];
+
+          // Track verified captchas
+          verified[formHtmlId] = false;
 
           $submit.on("click", function(e) {
             if ($(this).attr("data-disabled") === "true") {
               // Get HTML IDs for further processing.
-              const formHtmlId = $form.attr("id");
+
+
               const submitHtmlId = $(this).attr("id");
 
               // Find captcha wrapper.
@@ -38,10 +44,11 @@
                 const response = grecaptcha.getResponse(captchas[formHtmlId]);
 
                 // Verify reCaptcha response.
-                if (typeof response !== "undefined" && response.length) {
-                  $.post("/api/simple_recaptcha/verify?recaptcha_response=" + response + "&recaptcha_site_key=" + drupalSettings.simple_recaptcha.sitekey ).done(
+                if (typeof response !== "undefined" && response.length && !verified[formHtmlId] ) {
+                  $.post("/api/simple_recaptcha/verify?recaptcha_type=v2&recaptcha_response=" + response + "&recaptcha_site_key=" + drupalSettings.simple_recaptcha.sitekey ).done(
                     function (data) {
                       if (data.success) {
+                        verified[formHtmlId] = true;
                         const $currentSubmit = $('#' + submitHtmlId);
                         // Unblock submit on success.
                         $currentSubmit.removeAttr("data-disabled");
