@@ -169,7 +169,7 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
           ':input[name="settings[recaptcha][recaptcha_type]"]' => ['value' => 'v3'],
         ],
       ],
-      '#description' => $this->t('reCAPTCHA v3 returns a score (100 is very likely a good interaction, 0 is very likely a bot). Based on the score, you can decide when to block form submissions.')
+      '#description' => $this->t('reCAPTCHA v3 returns a score (100 is very likely a good interaction, 0 is very likely a bot). Based on the score, you can decide when to block form submissions.'),
     ];
 
     $form['recaptcha']['v3_error_message'] = [
@@ -181,7 +181,7 @@ class SimpleRecaptchaWebformHandler extends WebformHandlerBase {
           ':input[name="settings[recaptcha][recaptcha_type]"]' => ['value' => 'v3'],
         ],
       ],
-      '#description' => $this->t('This error message will be shown when reCAPTCHA validation will fail.')
+      '#description' => $this->t('This error message will be shown when reCAPTCHA validation will fail.'),
     ];
 
     return parent::buildConfigurationForm($form, $form_state);

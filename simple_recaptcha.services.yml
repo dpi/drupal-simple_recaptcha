@@ -3,3 +3,5 @@ services:
     class: Drupal\simple_recaptcha\SimpleReCaptchaFormManager
     arguments:
       - '@config.factory'
+      - '@http_client'
+      - '@logger.factory'

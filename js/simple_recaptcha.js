@@ -44,18 +44,12 @@
                 const response = grecaptcha.getResponse(captchas[formHtmlId]);
 
                 // Verify reCaptcha response.
-                if (typeof response !== "undefined" && response.length && !verified[formHtmlId] ) {
-                  $.post("/api/simple_recaptcha/verify?recaptcha_type=v2&recaptcha_response=" + response + "&recaptcha_site_key=" + drupalSettings.simple_recaptcha.sitekey ).done(
-                    function (data) {
-                      if (data.success) {
-                        verified[formHtmlId] = true;
-                        const $currentSubmit = $('#' + submitHtmlId);
-                        // Unblock submit on success.
-                        $currentSubmit.removeAttr("data-disabled");
-                        $currentSubmit.trigger("click");
-                      }
-                    }
-                  );
+                if (typeof response !== "undefined" && response.length ) {
+                  e.preventDefault();
+                  const $currentSubmit = $('#' + submitHtmlId);
+                  $form.find('input[name="simple_recaptcha_token"]').val(response);
+                  $currentSubmit.removeAttr("data-disabled");
+                  $currentSubmit.trigger("click");
                 } else {
                   // Mark captcha widget with error-like border.
                   $captcha.children().css({
