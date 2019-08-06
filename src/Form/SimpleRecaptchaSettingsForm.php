@@ -34,6 +34,36 @@ class SimpleRecaptchaSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config(static::SETTINGS);
 
+    $form['recaptcha'] = [
+      '#type' => 'details',
+      '#title' => $this->t('General settings'),
+      '#open' => TRUE,
+    ];
+
+    $form['recaptcha']['recaptcha_type'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('reCAPTCHA type'),
+      '#options' => [
+        'v2' => $this->t('reCAPTCHA v2 (checkbox)'),
+        'v3' => $this->t('reCAPTCHA v3 (invisible)'),
+      ],
+      '#default_value' => $config->get('recaptcha_type'),
+    ];
+
+    $form['recaptcha']['v3_score'] = [
+      '#type' => 'number',
+      '#title' => $this->t('desired reCAPTCHA score'),
+      '#max' => 100,
+      '#min' => 1,
+      '#default_value' => $config->get('v3_score'),
+      '#states' => [
+        'visible' => [
+          ':input[name="recaptcha_type"]' => ['value' => 'v3'],
+        ],
+      ],
+      '#description' => $this->t('reCAPTCHA v3 returns a score (100 is very likely a good interaction, 0 is very likely a bot). Based on the score, you can decide when to block form submissions.'),
+    ];
+
     $form['keys_v2'] = [
       '#type' => 'details',
       '#title' => $this->t('reCAPTCHA v2 checkbox'),
@@ -94,6 +124,8 @@ class SimpleRecaptchaSettingsForm extends ConfigFormBase {
       ->set('secret_key', $form_state->getValue('secret_key'))
       ->set('site_key_v3', $form_state->getValue('site_key_v3'))
       ->set('secret_key_v3', $form_state->getValue('secret_key_v3'))
+      ->set('recaptcha_type', $form_state->getValue('recaptcha_type'))
+      ->set('v3_score', $form_state->getValue('v3_score'))
       ->save();
 
     parent::submitForm($form, $form_state);

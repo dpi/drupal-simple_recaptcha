@@ -98,7 +98,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
       '#value' => 'v2',
     ];
 
-    $form['#validate'][] = 'Drupal\simple_recaptcha\SimpleReCaptchaFormManager::validateCaptchaToken';
+    $form['#validate'][] = [$this, 'validateCaptchaToken'];
   }
 
   /**
@@ -129,7 +129,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     $form['#attached']['drupalSettings']['simple_recaptcha_v3']['forms'][$form_id] = [
       'form_id' => $form_id,
       'score' => $configuration['v3_score'],
-      'error_message' => $configuration['v3_error_message'],
+      'error_message' => isset($configuration['v3_error_message']) ? $configuration['v3_error_message'] : NULL,
       'action' => $configuration['recaptcha_action'],
     ];
 
@@ -146,6 +146,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
 
     $form['simple_recaptcha_score'] = [
       '#type' => 'hidden',
+      '#value' => $configuration['v3_score'],
     ];
 
     $form['simple_recaptcha_message'] = [

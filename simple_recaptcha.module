@@ -27,7 +27,20 @@ function simple_recaptcha_form_alter(&$form, FormStateInterface $form_state, $fo
 
   // Attach reCaptcha markup and libraries to the form form.
   $info = $form_state->getBuildInfo();
-  \Drupal::service('simple_recaptcha.form_manager')->addReCaptchaChechbox($form, $info['form_id']);
+  switch ($config->get('recaptcha_type')) {
+    case 'v3':
+      $settings = [
+        'v3_score' => $config->get('v3_score'),
+        'recaptcha_action' => $info['form_id'],
+      ];
+      \Drupal::service('simple_recaptcha.form_manager')->addReCaptchaInvisible($form, $info['form_id'], $settings);
+      break;
+
+    case 'v2':
+    default:
+      \Drupal::service('simple_recaptcha.form_manager')->addReCaptchaChechbox($form, $info['form_id']);
+      break;
+  }
   return $form;
 }
 
@@ -56,11 +69,17 @@ function simple_recaptcha_help($route_name, RouteMatchInterface $arg) {
  * Implements hook_library_info_build().
  */
 function simple_recaptcha_library_info_build() {
+  $config = \Drupal::configFactory()->get('simple_recaptcha.config');
+
   $libraries = [];
   // reCAPTCHA v3 requires site key added to URL when loading it,
   // as site key is stored in config we need to build this library dynamically.
-  $sitekey = \Drupal::config('simple_recaptcha.config')->get('site_key_v3');
-  $url = 'https://www.google.com/recaptcha/api.js?render=' . $sitekey;
+  $url = 'https://www.google.com/recaptcha/api.js';
+  if ($config->get('recaptcha_type') == 'v3') {
+    $sitekey = \Drupal::config('simple_recaptcha.config')->get('site_key_v3');
+    $url .= '?render=' . $sitekey;
+  }
+
   $libraries['recaptcha'] = [
     'js' => [
       $url => [
