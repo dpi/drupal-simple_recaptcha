@@ -9,11 +9,14 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Serialization\Json;
 use GuzzleHttp\ClientInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
 /**
  * Provides helper service used to attach reCaptcha to forms.
  */
 class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
+
+  use DependencySerializationTrait;
 
   /**
    * The configuration factory.
