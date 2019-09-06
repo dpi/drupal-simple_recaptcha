@@ -8,7 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Serialization\Json;
 use GuzzleHttp\ClientInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
 /**
@@ -49,7 +49,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    * @param \Drupal\Core\Logger\LoggerChannelFactory $logger
    *   The logger factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactory $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactoryInterface $logger) {
     $this->configFactory = $config_factory;
     $this->client = $client;
     $this->logger = $logger;
