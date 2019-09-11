@@ -75,7 +75,15 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    *   Form ID of form which will be secured.
    */
   public function addReCaptchaChechbox(array &$form, $form_id) {
+    // Check if site keys are configured, if at least one of keys isn't provided
+    // protection won't work, so we can't modify and block this form.
     $config = $this->configFactory->get('simple_recaptcha.config');
+    $site_key = $config->get('site_key');
+    $secret_key = $config->get('secret_key');
+    if(!$site_key || !$secret_key){
+      return;
+    }
+
     // Add HTML data attributes and Wrapper for reCAPTCHA widget.
     $form['#attributes']['data-recaptcha-id'] = $form_id;
     $form['actions']['captcha'] = [
@@ -88,7 +96,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     ];
 
     // Attach helper libraries.
-    $form['#attached']['drupalSettings']['simple_recaptcha']['sitekey'] = $config->get('site_key');
+    $form['#attached']['drupalSettings']['simple_recaptcha']['sitekey'] = $site_key;
     $form['#attached']['drupalSettings']['simple_recaptcha']['form_ids'][$form_id] = $form_id;
     $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha';
 
@@ -116,7 +124,15 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    */
   public function addReCaptchaInvisible(array &$form, $form_id, array $configuration) {
 
+    // Check if site keys are configured, if at least one of keys isn't provided
+    // protection won't work, so we can't modify and block this form.
     $config = $this->configFactory->get('simple_recaptcha.config');
+    $site_key = $config->get('site_key_v3');
+    $secret_key = $config->get('secret_key_v3');
+    if(!$site_key || !$secret_key){
+      return;
+    }
+
     // Add HTML data attributes and Wrapper for reCAPTCHA widget.
     $form['#attributes']['data-recaptcha-id'] = $form_id;
     $form['actions']['captcha'] = [
@@ -128,7 +144,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
       ],
     ];
 
-    $form['#attached']['drupalSettings']['simple_recaptcha_v3']['sitekey'] = $config->get('site_key_v3');
+    $form['#attached']['drupalSettings']['simple_recaptcha_v3']['sitekey'] = $site_key;
     $form['#attached']['drupalSettings']['simple_recaptcha_v3']['forms'][$form_id] = [
       'form_id' => $form_id,
       'score' => $configuration['v3_score'],
