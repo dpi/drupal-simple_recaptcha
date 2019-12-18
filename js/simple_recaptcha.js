@@ -26,7 +26,7 @@
               const submitHtmlId = $(this).attr("id");
 
               // Find captcha wrapper.
-              const $captcha = $(this).prev(".recaptcha-wrapper");
+              const $captcha = $(this).closest("form").find(".recaptcha-wrapper");
 
               // If it is a first submission of that form, render captcha widget.
               if (

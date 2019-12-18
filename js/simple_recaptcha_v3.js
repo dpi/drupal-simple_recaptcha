@@ -11,7 +11,7 @@
           // Disable submit buttons on form.
           const $submit = $form.find('[type="submit"]');
           $submit.attr("data-disabled", "true");
-          const $captcha = $(this).prev(".recaptcha-wrapper");
+          const $captcha = $(this).closest("form").find(".recaptcha-wrapper");
           const captchas = [];
 
           $submit.on("click", function(e) {
