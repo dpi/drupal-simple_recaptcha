@@ -10,6 +10,7 @@ use Drupal\Component\Serialization\Json;
 use GuzzleHttp\ClientInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provides helper service used to attach reCaptcha to forms.
@@ -40,19 +41,29 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
   protected $logger;
 
   /**
+   * Module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a SimpleReCaptchaFormManager object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
    * @param \GuzzleHttp\ClientInterface $client
    *   Http client to connect with reCAPTCHA verify service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactory $logger
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
    *   The logger factory.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   Module handler service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactoryInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactoryInterface $logger, ModuleHandlerInterface $module_handler) {
     $this->configFactory = $config_factory;
     $this->client = $client;
     $this->logger = $logger;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -62,7 +73,8 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     return new static(
       $container->get('config.factory'),
       $container->get('http_client'),
-      $container->get('logger.factory')
+      $container->get('logger.factory'),
+      $container->get('module_handler')
     );
   }
 
@@ -75,12 +87,19 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    *   Form ID of form which will be secured.
    */
   public function addReCaptchaChechbox(array &$form, $form_id) {
+    // Allow modules to perform extra access checks and bypass validation.
+    $bypass = FALSE;
+    $this->moduleHandler->alter('simple_recaptcha_bypass', $form, $bypass);
+    if ($bypass) {
+      return;
+    }
+
     // Check if site keys are configured, if at least one of keys isn't provided
     // protection won't work, so we can't modify and block this form.
     $config = $this->configFactory->get('simple_recaptcha.config');
     $site_key = $config->get('site_key');
     $secret_key = $config->get('secret_key');
-    if(!$site_key || !$secret_key){
+    if (!$site_key || !$secret_key) {
       return;
     }
 
@@ -123,13 +142,19 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    *   Configuration for invisible recaptcha.
    */
   public function addReCaptchaInvisible(array &$form, $form_id, array $configuration) {
+    // Allow modules to perform extra access checks and bypass validation.
+    $bypass = FALSE;
+    $this->moduleHandler->alter('simple_recaptcha_bypass', $form, $bypass);
+    if ($bypass) {
+      return;
+    }
 
     // Check if site keys are configured, if at least one of keys isn't provided
     // protection won't work, so we can't modify and block this form.
     $config = $this->configFactory->get('simple_recaptcha.config');
     $site_key = $config->get('site_key_v3');
     $secret_key = $config->get('secret_key_v3');
-    if(!$site_key || !$secret_key){
+    if (!$site_key || !$secret_key) {
       return;
     }
 
