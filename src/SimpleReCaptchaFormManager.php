@@ -11,6 +11,7 @@ use GuzzleHttp\ClientInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
 /**
  * Provides helper service used to attach reCaptcha to forms.
@@ -48,6 +49,13 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
   protected $moduleHandler;
 
   /**
+   * Drupal\Core\TempStore\PrivateTempStoreFactory definition.
+   *
+   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
+   */
+  private $tempStoreFactory;
+
+  /**
    * Constructs a SimpleReCaptchaFormManager object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -58,12 +66,15 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    *   The logger factory.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
+   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   *   Private temp store factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactoryInterface $logger, ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, ClientInterface $client, LoggerChannelFactoryInterface $logger, ModuleHandlerInterface $module_handler, PrivateTempStoreFactory $temp_store_factory) {
     $this->configFactory = $config_factory;
     $this->client = $client;
     $this->logger = $logger;
     $this->moduleHandler = $module_handler;
+    $this->tempStoreFactory = $temp_store_factory;
   }
 
   /**
@@ -74,7 +85,8 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
       $container->get('config.factory'),
       $container->get('http_client'),
       $container->get('logger.factory'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('user.private_tempstore')
     );
   }
 
@@ -180,7 +192,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     $form['#attached']['library'][] = 'simple_recaptcha/simple_recaptcha_v3';
 
     $form['simple_recaptcha_token'] = [
-      '#type' => 'hidden',
+      '#type' => 'hidden'
     ];
 
     $form['simple_recaptcha_type'] = [
@@ -204,7 +216,18 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
    * Validates form with reCAPTCHA protection enabled.
    */
   public function validateCaptchaToken(&$form, FormStateInterface &$form_state) {
+    // Check if valid token is already present in private temp store.
+    $store = $this->tempStoreFactory->get('simple_recaptcha');
+    $store_key = 'simple_recaptcha';
+    $stored_token = $store->get($store_key);
+    $token = $form_state->getValue('simple_recaptcha_token');
 
+    if(strlen($token) > 0 && strlen($stored_token) > 0 && $stored_token == $token) {
+      return;
+    }
+
+    $build_info = $form_state->getBuildInfo();
+    $is_valid = $form_state->getValue('simple_recaptcha_validated');
     $message = $form_state->getValue('simple_recaptcha_message');
     if (!$message) {
       $message = t('There was an error during validation of your form submission, please try to reload the page and submit form again.');
@@ -218,7 +241,7 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     // Verify reCAPTCHA token.
     $params = [
       'secret' => $config_secret_key,
-      'response' => $form_state->getValue('simple_recaptcha_token'),
+      'response' => $token,
     ];
 
     $request = $this->client->post('https://www.google.com/recaptcha/api/siteverify', [
@@ -242,6 +265,10 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
       }
     }
 
+    // If API response is valid, store current token in private temp store,
+    // so we won't have to validate this form again.
+    if($api_response['success']) {
+      $store->set($store_key, $token);
+    }
   }
-
 }

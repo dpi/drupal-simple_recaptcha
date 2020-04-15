@@ -2,7 +2,6 @@
   "use strict";
   Drupal.behaviors.simple_recaptcha = {
     attach: function(context, drupalSettings) {
-      const verified = [];
       // Grab form IDs from settings and loop through them.
        for(let formId in drupalSettings.simple_recaptcha.form_ids) {
          const $form = $('form[data-recaptcha-id="'+formId+'"]');
@@ -15,31 +14,38 @@
           const formHtmlId = $form.attr("id");
           const captchas = [];
 
-          // Track verified captchas
-          verified[formHtmlId] = false;
+           // AJAX forms - add submit handler to form.beforeSend.
+           // Update Drupal.Ajax.prototype.beforeSend only once.
+           if (typeof Drupal.Ajax !== 'undefined' && typeof Drupal.Ajax.prototype.beforeSubmitSimpleRecaptchaOriginal === 'undefined') {
+             Drupal.Ajax.prototype.beforeSubmitSimpleRecaptchaOriginal = Drupal.Ajax.prototype.beforeSubmit;
+             Drupal.Ajax.prototype.beforeSubmit = function (form_values, element_settings, options) {
+               let $token = $form.find('input[name="simple_recaptcha_token"]').val();
+               if ($token === 'undefined' || $token === '') {
+                 this.ajaxing = false;
+                 return false;
+               }
+               return this.beforeSubmitSimpleRecaptchaOriginal();
+             }
+           }
 
           $submit.on("click", function(e) {
             if ($(this).attr("data-disabled") === "true") {
               // Get HTML IDs for further processing.
-
-
               const submitHtmlId = $(this).attr("id");
 
               // Find captcha wrapper.
               const $captcha = $(this).closest("form").find(".recaptcha-wrapper");
 
               // If it is a first submission of that form, render captcha widget.
-              if (
-                $captcha.length &&
-                typeof captchas[formHtmlId] === "undefined"
-              ) {
+              if ( $captcha.length && typeof captchas[formHtmlId] === "undefined" ) {
                 captchas[formHtmlId] = grecaptcha.render($captcha.attr("id"), {
                   sitekey: drupalSettings.simple_recaptcha.sitekey
                 });
                 $captcha.fadeIn();
                 $captcha.addClass('recaptcha-visible');
                 e.preventDefault();
-              } else {
+              }
+              else {
                 // Check reCaptcha response.
                 const response = grecaptcha.getResponse(captchas[formHtmlId]);
 
@@ -49,8 +55,11 @@
                   const $currentSubmit = $('#' + submitHtmlId);
                   $form.find('input[name="simple_recaptcha_token"]').val(response);
                   $currentSubmit.removeAttr("data-disabled");
-                  $currentSubmit.trigger("click");
-                } else {
+                  // Click goes for regular forms, mousedown for AJAX forms.
+                  $currentSubmit.click();
+                  $currentSubmit.mousedown();
+                }
+                else {
                   // Mark captcha widget with error-like border.
                   $captcha.children().css({
                     "border": "1px solid #e74c3c",

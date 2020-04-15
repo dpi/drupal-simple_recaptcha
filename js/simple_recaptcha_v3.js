@@ -8,11 +8,26 @@
           let formSettings = drupalSettings.simple_recaptcha_v3.forms[formId];
           $form.once("simple-recaptcha").each(function() {
           $form.find('input[name="simple_recaptcha_score"]').val(formSettings.score);
+
           // Disable submit buttons on form.
           const $submit = $form.find('[type="submit"]');
           $submit.attr("data-disabled", "true");
           const $captcha = $(this).closest("form").find(".recaptcha-wrapper");
           const captchas = [];
+
+          // AJAX forms - add submit handler to form.beforeSend.
+          // Update Drupal.Ajax.prototype.beforeSend only once.
+          if (typeof Drupal.Ajax !== 'undefined' && typeof Drupal.Ajax.prototype.beforeSubmitSimpleRecaptchaOriginal === 'undefined') {
+            Drupal.Ajax.prototype.beforeSubmitSimpleRecaptchaOriginal = Drupal.Ajax.prototype.beforeSubmit;
+            Drupal.Ajax.prototype.beforeSubmit = function (form_values, element_settings, options) {
+              let $token = $form.find('input[name="simple_recaptcha_token"]').val();
+              if ($token === 'undefined' || $token === '') {
+                this.ajaxing = false;
+                return false;
+              }
+              return this.beforeSubmitSimpleRecaptchaOriginal();
+            }
+          }
 
           $submit.on("click", function(e) {
             if ($(this).attr("data-disabled") === "true") {
@@ -32,7 +47,9 @@
                     $form.find('input[name="simple_recaptcha_token"]').val(token);
                     $form.find('input[name="simple_recaptcha_message"]').val(formSettings.error_message);
                     $currentSubmit.removeAttr("data-disabled");
-                    $currentSubmit.trigger("click");
+                    // Click goes for regular forms, mousedown for AJAX forms.
+                    $currentSubmit.click();
+                    $currentSubmit.mousedown();
                   });
                 });
               }
