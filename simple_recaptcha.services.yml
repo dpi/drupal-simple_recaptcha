@@ -6,4 +6,4 @@ services:
       - '@http_client'
       - '@logger.factory'
       - '@module_handler'
-      - '@user.private_tempstore'
+      - '@tempstore.shared'

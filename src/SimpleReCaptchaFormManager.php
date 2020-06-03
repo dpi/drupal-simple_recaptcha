@@ -3,8 +3,6 @@
 namespace Drupal\simple_recaptcha;
 
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Serialization\Json;
 use GuzzleHttp\ClientInterface;
@@ -16,7 +14,7 @@ use Drupal\Core\TempStore\PrivateTempStoreFactory;
 /**
  * Provides helper service used to attach reCaptcha to forms.
  */
-class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
+class SimpleReCaptchaFormManager {
 
   use DependencySerializationTrait;
 
@@ -49,11 +47,11 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
   protected $moduleHandler;
 
   /**
-   * Drupal\Core\TempStore\PrivateTempStoreFactory definition.
+   *Private temp store factory.
    *
    * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    */
-  private $tempStoreFactory;
+  protected $tempStoreFactory;
 
   /**
    * Constructs a SimpleReCaptchaFormManager object.
@@ -75,19 +73,6 @@ class SimpleReCaptchaFormManager implements ContainerInjectionInterface {
     $this->logger = $logger;
     $this->moduleHandler = $module_handler;
     $this->tempStoreFactory = $temp_store_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('http_client'),
-      $container->get('logger.factory'),
-      $container->get('module_handler'),
-      $container->get('user.private_tempstore')
-    );
   }
 
   /**
